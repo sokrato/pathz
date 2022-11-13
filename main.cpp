@@ -90,6 +90,7 @@ int main (int argc, char* argv[]) {
         }
         cout << *it ;
     }
+    cout << endl;
 
     return 0;
 }
