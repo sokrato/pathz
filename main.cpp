@@ -10,6 +10,19 @@
 
 using namespace std;
 
+static string home = getenv("HOME");
+
+string expandHome(string inout) {
+    const string what{"~"};
+    const string& with = home;
+    for (string::size_type pos{};
+         inout.npos != (pos = inout.find(what.data(), pos, what.length()));
+         pos += with.length()) {
+        inout.replace(pos, what.length(), with.data(), with.length());
+    }
+    return inout;
+}
+
 // split str separated by sep into a vector
 vector<string> split(string str, char sep) {
     vector<string> res;
@@ -45,7 +58,7 @@ vector<string> fromConfigFile(string file) {
             if (buf.starts_with(COMMENT)) {
                 continue;
             }
-            res.push_back(buf);
+            res.push_back(expandHome(buf));
         }
         fin.close();
     } else {
@@ -67,9 +80,7 @@ void addIfNotExists(set<string>& seen, vector<string>& res, vector<string>& tmp)
 }
 
 int main (int argc, char* argv[]) {
-    string file = getenv("HOME");
-    file.append("/.pathz");
-
+    string file = expandHome("~/.pathz");
     vector<string> paths = fromConfigFile(file);
 
     set<string> seen;
