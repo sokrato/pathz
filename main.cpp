@@ -12,7 +12,7 @@ using namespace std;
 
 static string home = getenv("HOME");
 
-string expandHome(string inout) {
+string expandTilde(string inout) {
     const string what{"~"};
     const string& with = home;
     for (string::size_type pos{};
@@ -51,18 +51,18 @@ string trim(string s) {
 // skipping lines that start with #
 vector<string> fromConfigFile(string file) {
     vector<string> res;
-    fstream fin(file, ios::in);
+    fstream fin{file, ios::in};
     if (fin.is_open()) {
         for (string buf; getline(fin, buf); ) {
             buf = trim(buf);
             if (buf.starts_with(COMMENT)) {
                 continue;
             }
-            res.push_back(expandHome(buf));
+            res.push_back(expandTilde(buf));
         }
         fin.close();
     } else {
-        cerr << "failed to read config file " << file  << endl;
+        cerr << "failed to read config file: " << file  << endl;
     }
     return res;
 }
@@ -79,8 +79,21 @@ void addIfNotExists(set<string>& seen, vector<string>& res, vector<string>& tmp)
     }
 }
 
+void printPaths(vector<string> res) {
+    bool first = true;
+    for (auto it = res.begin(); it != res.end(); ++it) {
+        if (first) {
+            first = false;
+        } else {
+            cout << SEP ;
+        }
+        cout << *it ;
+    }
+    cout << endl;
+}
+
 int main (int argc, char* argv[]) {
-    string file = expandHome("~/.pathz");
+    string file = expandTilde("~/.pathz");
     vector<string> paths = fromConfigFile(file);
 
     set<string> seen;
@@ -91,17 +104,7 @@ int main (int argc, char* argv[]) {
 
     paths = split(env, SEP);
     addIfNotExists(seen, res, paths);
-
-    bool first = true;
-    for (auto it = res.begin(); it != res.end(); ++it) {
-        if (first) {
-            first = false;
-        } else {
-            cout << ":" ;
-        }
-        cout << *it ;
-    }
-    cout << endl;
+    printPaths(res);
 
     return 0;
 }
